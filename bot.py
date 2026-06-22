@@ -79,8 +79,12 @@ def utc_to_ist(timestamp: int) -> str:
 def api_get(path: str, params: dict) -> dict:
     try:
         r = requests.get(f"{BASE_URL}{path}", headers=HEADERS, params=params, timeout=15)
+        # 👇 ADD THESE DIAGNOSTIC PRINTS TEMPORARILY
+        print(f"📡 API CALL: {path} with params {params}")
+        print(f"📦 RAW RESPONSE: {r.text}")
         return r.json()
     except Exception as e:
+        print(f"❌ Network/JSON Error: {e}")
         print(f"[API error] {e}")
         return {}
 
