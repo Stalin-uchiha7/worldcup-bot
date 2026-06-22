@@ -272,10 +272,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/standings - All group standings\n"
         "/stats - Tournament statistics\n\n"
         "🏟 <b>Team & Player Info</b>\n"
-        "/group <name> - Specific group table\n"
-        "/team <name> - Team information\n"
-        "/player <name> - Player statistics\n"
-        "/match <team1> vs <team2> - Match details\n\n"
+        "/group [name] - Specific group table\n"
+        "/team [name] - Team information\n"
+        "/player [name] - Player statistics\n"
+        "/match [team1] vs [team2] - Match details\n\n"
         "❓ /help - Show this message"
     )
     await update.message.reply_text(text, parse_mode="HTML")
