@@ -120,7 +120,7 @@ def api_get(path: str, params: dict) -> dict:
 
 def get_live_fixtures() -> list:
     # NO cache for live — must be real-time
-    data = api_get(f"/competitions/{WC_CODE}/matches", {"status": "IN_PLAY,PAUSED"})
+    data = api_get(f"/competitions/{WC_CODE}/matches", {"status": "IN_PLAY,PAUSED,LIVE"})
     return data.get("matches", [])
 
 def get_fixtures_by_date(date_str: str) -> list:
@@ -242,7 +242,7 @@ def get_finished_fixtures(limit: int = 5) -> list:
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     data = api_get(f"/competitions/{WC_CODE}/matches", {"dateFrom": today, "dateTo": today})
     result = data.get("matches", [])
-    finished = [f for f in result if f["status"] == "FINISHED"]
+    finished = [f for f in result if f["status"] in ("FINISHED", "FT", "AET", "PEN")]
     cache_set(cache_key, finished[:limit])
     return finished[:limit]
 
@@ -351,7 +351,7 @@ async def today(update: Update, context: ContextTypes.DEFAULT_TYPE):
         status = m["status"]
         ist_time = utc_to_ist(m["utcDate"])
         
-        if status in ("TIMED", "SCHEDULED"):
+        if status in ("TIMED", "SCHEDULED", "NS"):
             lines.append(f"🕐 <b>{ist_time}</b>\n   {flag(h)} <b>{h}</b> vs <b>{a}</b> {flag(a)}\n   📌 {stage} | 🏟 {venue}")
         else:
             gh, ga = get_score(m)
@@ -836,7 +836,7 @@ def process_fixture(m: dict, state: dict) -> dict:
     stage  = m.get("stage", "").replace("_", " ").title()
 
     # Kick-off
-    if status == "IN_PLAY" and not ms["sent_start"]:
+    if status in ("IN_PLAY", "LIVE") and not ms["sent_start"]:
         ms["sent_start"] = True
         utcdt = m.get("utcDate", "")
         send(f"🟢 <b>KICK-OFF!</b>\n{header}\n🏟 {venue}  |  📌 {stage}\n🕐 {utc_to_ist(utcdt)}")
@@ -982,7 +982,7 @@ def main():
     application.add_handler(CommandHandler("stats", stats_command))
     
     # Start the bot
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    application.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
